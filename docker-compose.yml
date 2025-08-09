@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: taskflow-app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://taskflow:secret@db:5432/taskflowdb
+      - SECRET_KEY=change-me-super-secret
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60
+    
+  db:
+    image: postgres:15
+    container_name: taskflow-db
+    restart: always
+    environment:
+      - POSTGRES_USER=taskflow
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=taskflowdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:
