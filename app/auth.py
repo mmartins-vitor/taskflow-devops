@@ -1,9 +1,10 @@
+# importações
 import os
 from datetime import datetime, timedelta
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -14,6 +15,7 @@ from app.schemas import UserCreate, UserRead, Token, TokenData
 from app.models import User
 
 router = APIRouter(tags=["auth"])
+
 
 # == config ==
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
@@ -32,12 +34,22 @@ def get_db():
         db.close()
 
 
+# == utilitarios de senha e usuario ==
+
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
+
+
+def get_user_by_username(db: Session, username: str) -> Optional[User]:
+    return db.query(User).filter(User.username == username).first()
+
+
+# == Criação do token JWT ==
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -47,10 +59,6 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     )
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-
-
-def get_user_by_username(db: Session, username: str) -> Optional[User]:
-    return db.query(User).filter(User.username == username).first()
 
 
 # ===== Endpoints =====
@@ -79,6 +87,20 @@ def login(payload: UserCreate, db: Session = Depends(get_db)):
         )
     token = create_access_token({"sub": user.username})
     return {"access_token": token, "token_type": "bearer"}
+
+
+"""
+@router.post("/token", response_model=Token)
+def login_oauth(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
+):
+    user = get_user_by_username(db, form_data.username)
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    token = create_access_token({"sub": user.username})
+    return {"access_token": token, "token_type": "bearer"}
+"""
 
 
 # ===== Dependency p/ rotas protegidas =====

@@ -23,4 +23,4 @@ class User(Base):
     username = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
 
-    task = relationship("Task", back_populates="owner")
+    tasks = relationship("Task", back_populates="owner")
