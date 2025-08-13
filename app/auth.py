@@ -22,7 +22,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+oauth_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 
 # == helper ==
@@ -89,7 +89,6 @@ def login(payload: UserCreate, db: Session = Depends(get_db)):
     return {"access_token": token, "token_type": "bearer"}
 
 
-"""
 @router.post("/token", response_model=Token)
 def login_oauth(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -100,7 +99,6 @@ def login_oauth(
         raise HTTPException(status_code=401, detail="Invalid credentials")
     token = create_access_token({"sub": user.username})
     return {"access_token": token, "token_type": "bearer"}
-"""
 
 
 # ===== Dependency p/ rotas protegidas =====
