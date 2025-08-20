@@ -49,7 +49,7 @@ def update_task(
     db_task = db.query(Task).get(task_id)
     if not db_task:
         raise HTTPException(status_code=404, detail="Task not found")
-    if db_task.onwer_id != current_user.id:
+    if db_task.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
     db_task.title = task.title
     db_task.description = task.description

@@ -15,5 +15,5 @@ def test_login_invalid_password(client):
     # garante usuario
     client.post("/register", json={"username": "bob", "password": "pwd"})
     # senha errada
-    r.client.post("/login", json={"username": "bob", "password": "wrong"})
+    r = client.post("/login", json={"username": "bob", "password": "wrong"})
     assert r.status_code == 401
